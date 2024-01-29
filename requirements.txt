@@ -10,4 +10,5 @@ huggingface-hub
 pypdf2
 openai
 streamlit
-
+chromadb
+sentence-transformers
