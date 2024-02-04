@@ -29,6 +29,5 @@ clean:
 
 
 # Define Variables
-.PHONY: rag
 rag:
     cd RAG && streamlit run rag.py

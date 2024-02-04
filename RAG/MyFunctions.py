@@ -1,20 +1,25 @@
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
-#from langchain.vectorstores import Chroma
+#from langchain_openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import Weaviate
 from PyPDF2 import PdfReader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 #from langchain.embeddings import HuggingFaceInstructEmbeddings
-#from langchain_community.embeddings import HuggingFaceInstructEmbeddings
+from langchain_community.embeddings import HuggingFaceInstructEmbeddings
 from langchain_community.embeddings.sentence_transformer import (
     SentenceTransformerEmbeddings,
 )
 
+from langchain_community.vectorstores import FAISS
+import os
+from dotenv import load_dotenv
 
 
-# It will store the embedding on disk
-persist_directory = "db"
+
+load_dotenv()
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 
 class MySpecialFunctions:
@@ -42,8 +47,6 @@ class MySpecialFunctions:
                 text += page.extract_text()
 
         return text
-
-
     
     
     def get_text_chunks(self, text):
@@ -56,32 +59,43 @@ class MySpecialFunctions:
         return chunk
     
 
-    def get_vectorstore(self, chunks):
-        # embed with OpenAI
-        #embedding = OpenAIEmbeddings()
-        hf_embedding = HuggingFaceEmbeddings()
-
-        # embed with HuggingFace. You replace cpu by cuda
-        # hf_embedding = HuggingFaceInstructEmbeddings(
-        #     model_name="hkunlp/instructor-xl", 
-        #     model_kwargs={"device": "cpu"})
-
-        # create the open-source embedding function
-        embedding_function = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-        
-        # create vectorstore
-        vector_db = Chroma.from_documents(
-            documents = chunks,
-            embedding = hf_embedding,
-            #persist_directory = persist_directory
-        )
-
-        return vector_db #, persist_directory
-
-
-
-
-
-        
+    def get_OpenAIEmbeddings(self):
+        return OpenAIEmbeddings()
 
     
+    def get_HuggingFaceEmbeddings(self):
+        hf_embedder = HuggingFaceInstructEmbeddings(
+            model_name="hkunlp/instructor-xl", 
+            model_kwargs={"device": "cpu"}
+        )
+        return hf_embedder
+    
+    def get_open_embedding(self):
+        # create the open-source embedding function
+        open_embedder = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+        return open_embedder
+    
+
+    def get_faiss_vectorstore(self, text_chunks, embeddings_method):
+        vectorstore = FAISS.from_texts(texts= text_chunks, embedding= embeddings_method)
+        #vectorstore = FAISS.from_documents(documents= text_chunks, embedding= embeddings_method)
+        return vectorstore
+    
+    def get_chroma_vectorstore(self, text_chunks, embeddings_method):
+        # vectoestore = Chroma.from_documents(
+        #     documents = text_chunks,
+        #     embedding = embeddings_method,
+        # )
+
+        vectoestore = Chroma.from_texts(
+            text_chunks, 
+            embeddings_method,
+        )       
+        return vectoestore
+    
+    def get_weaviate_vectorstore(self, text_chunks, embeddings_method):
+        vectorstore = Weaviate.from_texts(
+            text_chunks,
+            embeddings_method,
+            weaviate_url="http://127.0.0.1:8080"
+        )
