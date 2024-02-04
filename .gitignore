@@ -6,3 +6,5 @@ llama/**
 notebooks/m*
 embeddings_cache
 embeddings_cache/**
+ab_notebook/
+ab_notebook/** */
