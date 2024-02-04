@@ -1,2 +1,6 @@
-.env\ndata/
-data/raw
+.env
+data
+data/**
+llama
+llama/**
+notebooks/m*
