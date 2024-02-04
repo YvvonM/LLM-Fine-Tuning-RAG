@@ -4,3 +4,5 @@ data/**
 llama
 llama/**
 notebooks/m*
+embeddings_cache
+embeddings_cache/**
